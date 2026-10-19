@@ -253,27 +253,42 @@ export const MarkdownRenderer = {
 	render: async (): Promise<void> => {},
 };
 
-class MenuItem {
-	setTitle(): this {
+export class MenuItem {
+	title = "";
+	icon = "";
+	click: (() => void) | null = null;
+
+	setTitle(title: string): this {
+		this.title = title;
 		return this;
 	}
 
-	setIcon(): this {
+	setIcon(icon: string): this {
+		this.icon = icon;
 		return this;
 	}
 
-	onClick(): this {
+	onClick(callback: () => void): this {
+		this.click = callback;
 		return this;
 	}
 }
 
 export class Menu {
+	/** Menus built during a test, in creation order; `showAtMouseEvent` records one. */
+	static readonly shown: Menu[] = [];
+	readonly items: MenuItem[] = [];
+
 	addItem(configure: (item: MenuItem) => void): this {
-		configure(new MenuItem());
+		const item = new MenuItem();
+		configure(item);
+		this.items.push(item);
 		return this;
 	}
 
-	showAtMouseEvent(): void {}
+	showAtMouseEvent(): void {
+		Menu.shown.push(this);
+	}
 }
 
 export const setIcon = (): void => {};

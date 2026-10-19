@@ -1,4 +1,4 @@
-import { App, Component, MarkdownRenderer, Menu, setIcon } from "obsidian";
+import { App, Component, MarkdownRenderer, Menu, Notice, setIcon } from "obsidian";
 import type { Result } from "better-result";
 import type { AuthorColorResolver } from "../author-colors";
 import type { AnchorDamage } from "../editor/anchor-repair";
@@ -533,11 +533,27 @@ export class Card {
 		);
 		menu.addItem((item) =>
 			item
+				.setTitle("Copy comment id")
+				.setIcon("copy")
+				.onClick(() => void this.copyCommentId()),
+		);
+		menu.addItem((item) =>
+			item
 				.setTitle(index === 0 ? "Delete comment" : "Delete reply")
 				.setIcon("trash")
 				.onClick(() => (index === 0 ? this.cb.remove(this.id) : this.cb.deleteEntry(this.id, index))),
 		);
 		menu.showAtMouseEvent(e);
+	}
+
+	/** Put the bare comment id on the clipboard, e.g. for `track show <id>`. */
+	private async copyCommentId(): Promise<void> {
+		try {
+			await navigator.clipboard.writeText(this.id);
+			new Notice(`Copied comment id ${this.id}`);
+		} catch (error) {
+			new Notice(`Couldn't copy the comment id: ${error instanceof Error ? error.message : String(error)}`);
+		}
 	}
 
 	private openReactionPicker(anchor: HTMLElement, entry: number): void {

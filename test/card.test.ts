@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 import { beforeAll, describe, expect, test, vi } from "vitest";
 import { Result } from "better-result";
+import { Menu } from "obsidian";
 import { ParsedComment } from "../src/format/types";
 import { Card, CardCallbacks } from "../src/ui/card";
 
@@ -354,6 +355,57 @@ describe("empty comment card", () => {
 			"Keep this reply",
 		);
 		expect(cb.reply).toHaveBeenCalledWith("h1", "Keep this reply");
+		card.destroy();
+	});
+});
+
+describe("copy comment id", () => {
+	const view = { sourcePath: () => "note.md" };
+
+	const openEntryMenu = (card: Card, entry: number): Menu | undefined => {
+		Menu.shown.length = 0;
+		card.el.querySelectorAll<HTMLButtonElement>("button[aria-label='More']")[entry]?.click();
+		return Menu.shown[Menu.shown.length - 1];
+	};
+
+	const clipboard = (): { writeText: ReturnType<typeof vi.fn> } => {
+		const writeText = vi.fn(async () => {});
+		Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+		return { writeText };
+	};
+
+	test("offers the action in every entry's More menu and copies the bare id", async () => {
+		const comment = {
+			...commentWithText(),
+			thread: [
+				{ author: "kyle", text: "Original" },
+				{ author: "Cathy", text: "Reply" },
+			],
+		};
+		const card = new Card(comment, callbacks(), view);
+		const { writeText } = clipboard();
+
+		expect(openEntryMenu(card, 0)?.items.map((item) => item.title)).toEqual([
+			"Edit",
+			"Copy comment id",
+			"Delete comment",
+		]);
+		const item = openEntryMenu(card, 1)?.items.find((entry) => entry.title === "Copy comment id");
+		item?.click?.();
+
+		await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith("h1"));
+		card.destroy();
+	});
+
+	test("stays available on a resolved comment", async () => {
+		const card = new Card({ ...commentWithText(), status: "resolved" }, callbacks(), view);
+		const { writeText } = clipboard();
+
+		const item = openEntryMenu(card, 0)?.items.find((entry) => entry.title === "Copy comment id");
+		expect(item).toBeDefined();
+		item?.click?.();
+
+		await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith("h1"));
 		card.destroy();
 	});
 });
