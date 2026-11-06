@@ -374,7 +374,7 @@ describe("copy comment id", () => {
 		return { writeText };
 	};
 
-	test("offers the action in every entry's More menu and copies the bare id", async () => {
+	test("offers the action in every entry's More menu and copies the @-prefixed id", async () => {
 		const comment = {
 			...commentWithText(),
 			thread: [
@@ -393,7 +393,7 @@ describe("copy comment id", () => {
 		const item = openEntryMenu(card, 1)?.items.find((entry) => entry.title === "Copy comment id");
 		item?.click?.();
 
-		await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith("h1"));
+		await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith("@h1"));
 		card.destroy();
 	});
 
@@ -405,7 +405,7 @@ describe("copy comment id", () => {
 		expect(item).toBeDefined();
 		item?.click?.();
 
-		await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith("h1"));
+		await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith("@h1"));
 		card.destroy();
 	});
 });
