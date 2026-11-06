@@ -1,8 +1,9 @@
-import { App, Component, MarkdownRenderer, Menu, Notice, setIcon } from "obsidian";
+import { App, Component, MarkdownRenderer, Menu, setIcon } from "obsidian";
 import type { Result } from "better-result";
 import type { AuthorColorResolver } from "../author-colors";
 import type { AnchorDamage } from "../editor/anchor-repair";
 import { ParsedComment, ReactionTarget } from "../format/types";
+import { copyCommentId } from "./clipboard";
 import { CardEntry, cardEntries, cardSignature, formatRelativeTime } from "./card-format";
 
 const QUICK_EMOJI = ["👍", "❤️", "😄", "🎉", "😮", "👀", "🙏"];
@@ -535,7 +536,7 @@ export class Card {
 			item
 				.setTitle("Copy comment id")
 				.setIcon("copy")
-				.onClick(() => void this.copyCommentId()),
+				.onClick(() => void copyCommentId(this.id)),
 		);
 		menu.addItem((item) =>
 			item
@@ -544,16 +545,6 @@ export class Card {
 				.onClick(() => (index === 0 ? this.cb.remove(this.id) : this.cb.deleteEntry(this.id, index))),
 		);
 		menu.showAtMouseEvent(e);
-	}
-
-	/** Put the bare comment id on the clipboard, e.g. for `track show <id>`. */
-	private async copyCommentId(): Promise<void> {
-		try {
-			await navigator.clipboard.writeText(this.id);
-			new Notice(`Copied comment id ${this.id}`);
-		} catch (error) {
-			new Notice(`Couldn't copy the comment id: ${error instanceof Error ? error.message : String(error)}`);
-		}
 	}
 
 	private openReactionPicker(anchor: HTMLElement, entry: number): void {

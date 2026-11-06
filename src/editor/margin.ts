@@ -26,6 +26,7 @@ import { closestSpanId, spanSelector } from "../util/css";
 import { stackTops } from "../ui/stack";
 import { CARD_GAP, FLASH_MS } from "../ui/constants";
 import { buildDraftComposer } from "../ui/draft-composer";
+import { copyCreatedCommentId } from "../ui/clipboard";
 import { EmptySubmitAction } from "../ui/draft-behavior";
 
 /** Key for the draft composer's anchor in the table-cell lookup. */
@@ -334,7 +335,10 @@ class MarginView implements PluginValue {
 						draft.targetHighlightId,
 					),
 				);
-				if (result.isOk()) this.view.dispatch({ effects: clearDraft.of(null) });
+				if (result.isOk()) {
+					this.view.dispatch({ effects: clearDraft.of(null) });
+					copyCreatedCommentId(result.value);
+				}
 				return result.map(() => undefined);
 			},
 		});

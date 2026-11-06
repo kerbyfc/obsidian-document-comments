@@ -21,6 +21,7 @@ import { closestSpanId, spanSelector } from "../util/css";
 import { stackTops } from "../ui/stack";
 import { CARD_GAP, FLASH_MS } from "../ui/constants";
 import { buildDraftComposer } from "../ui/draft-composer";
+import { copyCreatedCommentId } from "../ui/clipboard";
 import { EmptySubmitAction } from "../ui/draft-behavior";
 import { authorColorCss, type AuthorColorResolver } from "../author-colors";
 import { isHtmlElement } from "../util/dom";
@@ -306,7 +307,10 @@ class ReadingMargin {
 			targetHighlightId,
 		);
 		result.match({
-			ok: () => void this.refresh(),
+			ok: (id) => {
+				void this.refresh();
+				copyCreatedCommentId(id);
+			},
 			err: (message) => new Notice(`Couldn't add the comment: ${message}`),
 		});
 		return result.map(() => undefined);

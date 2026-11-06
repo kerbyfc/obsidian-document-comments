@@ -24,6 +24,7 @@ import { findSectionRange, highlightPostProcessor, mapReadingSelection } from ".
 import { ReadingDeps, ReadingMarginManager } from "./reading/margin";
 import { COMMENTS_VIEW_TYPE, CommentsSidebarView, SidebarDeps } from "./ui/sidebar";
 import { CommentModal } from "./ui/comment-modal";
+import { copyCreatedCommentId } from "./ui/clipboard";
 import { DEFAULT_SETTINGS, DocCommentsSettings, DocCommentsSettingTab } from "./settings";
 import { tableHighlightPlugin } from "./editor/table-highlights";
 import { anchorDamage, computeRepairAnchors } from "./editor/anchor-repair";
@@ -335,7 +336,10 @@ export default class DocCommentsPlugin extends Plugin {
 						this.settings.allowEmptyComments,
 						targetHighlightId,
 					);
-					if (result.isErr()) new Notice(`Couldn't add the comment: ${result.error}`);
+					result.match({
+						ok: copyCreatedCommentId,
+						err: (message) => new Notice(`Couldn't add the comment: ${message}`),
+					});
 					return result.map(() => undefined);
 				},
 				emptyAction,
@@ -426,7 +430,10 @@ export default class DocCommentsPlugin extends Plugin {
 			targetHighlightId,
 		);
 		result.match({
-			ok: () => this.scheduleReadingRefresh(),
+			ok: (id) => {
+				this.scheduleReadingRefresh();
+				copyCreatedCommentId(id);
+			},
 			err: (message) => new Notice(`Couldn't add the comment: ${message}`),
 		});
 		return result.map(() => undefined);
